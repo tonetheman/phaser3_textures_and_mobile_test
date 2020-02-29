@@ -5,6 +5,7 @@ let gameOptions = {
     pixelArt : true
 };
 let game = null;
+let SWIPE_THRESHOLD = 50;
 
 function resize(){
     let canvas = document.querySelector("canvas");
@@ -36,6 +37,16 @@ class GameScene extends Phaser.Scene {
     constructor() {
         super("game");
         this.igroup = null;
+        this.upX = 0;
+        this.upY = 0;
+        this.downX = 0;
+        this.downY = 0;
+
+        this.board = [
+            [1,2,3],
+            [4,5,1],
+            [2,3,4]
+        ];
     }
     make_graphics() {
         let _this = this;
@@ -59,6 +70,9 @@ class GameScene extends Phaser.Scene {
         this.load.image("3","274b69.png");
         this.load.image("4","202022.png");
         this.load.image("5","c6ccd8.png");
+
+        // player
+        this.load.image("player", "202022_selected.png");
     }
     create() {
         this.igroup = this.add.group();
@@ -92,7 +106,7 @@ class GameScene extends Phaser.Scene {
        // middle row
        tmp = this.add.image(0,Y_OFF+132,"4").setOrigin(0,0);
        this.sliders.add(tmp);
-       tmp = this.add.image(132,Y_OFF+132,"5").setOrigin(0,0);
+       tmp = this.add.image(132,Y_OFF+132,"player").setOrigin(0,0);
        this.sliders.add(tmp);
        tmp = this.add.image(132+132,Y_OFF+132,"1").setOrigin(0,0);
        this.sliders.add(tmp);
@@ -104,6 +118,24 @@ class GameScene extends Phaser.Scene {
        tmp = this.add.image(132+132,Y_OFF+132+132,"4").setOrigin(0,0);
        this.sliders.add(tmp);
 
+       this.input.on("pointerdown", (ptr) => {
+           this.downX = ptr.x;
+           this.downY = ptr.y;
+       });
+       this.input.on("pointerup", (ptr) => {
+            this.upX = ptr.x;
+            this.upY = ptr.y;
+
+            if (this.upX < this.downX - SWIPE_THRESHOLD){
+                console.log("swipeleft");
+            } else if (this.upX > this.downX + SWIPE_THRESHOLD) {
+                console.log("swiperight");
+            } else if (this.upY < this.downY - SWIPE_THRESHOLD) {
+                console.log("swipeup");
+            } else if (this.upY > this.downY + SWIPE_THRESHOLD) {
+                console.log("swipedown");
+            }
+       });
 
 
     }
