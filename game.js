@@ -54,6 +54,11 @@ class GameScene extends Phaser.Scene {
     }
     preload() {
         this.make_graphics();
+        this.load.image("1", "3f4d63.png");
+        this.load.image("2", "85a1c1.png");
+        this.load.image("3","274b69.png");
+        this.load.image("4","202022.png");
+        this.load.image("5","c6ccd8.png");
     }
     create() {
         this.igroup = this.add.group();
@@ -66,9 +71,41 @@ class GameScene extends Phaser.Scene {
         tmp = this.add.image(0,gameOptions.height-8,"blue").setOrigin(0,0);
         this.igroup.add(tmp);
 
+        /*
+        // middle dot red
         tmp = this.add.image(gameOptions.width/2,
             gameOptions.height/2,"red");
         this.igroup.add(tmp);
+        */
+       
+       this.sliders = this.add.group();
+
+       let Y_OFF = 200;
+
+       // top row
+       tmp = this.add.image(0,Y_OFF+0,"1").setOrigin(0,0);
+       this.sliders.add(tmp);
+       tmp = this.add.image(132,Y_OFF+0,"2").setOrigin(0,0);
+       this.sliders.add(tmp);
+       tmp = this.add.image(132+132,Y_OFF+0,"3").setOrigin(0,0);
+       this.sliders.add(tmp);
+       // middle row
+       tmp = this.add.image(0,Y_OFF+132,"4").setOrigin(0,0);
+       this.sliders.add(tmp);
+       tmp = this.add.image(132,Y_OFF+132,"5").setOrigin(0,0);
+       this.sliders.add(tmp);
+       tmp = this.add.image(132+132,Y_OFF+132,"1").setOrigin(0,0);
+       this.sliders.add(tmp);
+       // bottom row
+       tmp = this.add.image(0,Y_OFF+132+132,"2").setOrigin(0,0);
+       this.sliders.add(tmp);
+       tmp = this.add.image(132,Y_OFF+132+132,"3").setOrigin(0,0);
+       this.sliders.add(tmp);
+       tmp = this.add.image(132+132,Y_OFF+132+132,"4").setOrigin(0,0);
+       this.sliders.add(tmp);
+
+
+
     }
 }
 
