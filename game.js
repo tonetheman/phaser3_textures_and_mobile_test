@@ -42,11 +42,9 @@ class GameScene extends Phaser.Scene {
         this.downX = 0;
         this.downY = 0;
 
-        this.board = [
-            [1,2,3],
-            [4,5,1],
-            [2,3,4]
-        ];
+        this.board = null; // 2d array
+        this.player = null;
+
     }
     make_graphics() {
         let _this = this;
@@ -74,6 +72,18 @@ class GameScene extends Phaser.Scene {
         // player
         this.load.image("player", "202022_selected.png");
     }
+    handle_swipe(direction) {
+        if (direction=="left") {
+            let row = this.player.row;
+            let col = this.player.col;
+
+            // hide the sprite to the left
+            this.board[row][col-1].sprite.visible = false;
+
+            // now tween the player to that position
+            
+        }
+    }
     create() {
         this.igroup = this.add.group();
         let tmp = this.add.image(0,0,"blue").setOrigin(0,0);
@@ -96,27 +106,48 @@ class GameScene extends Phaser.Scene {
 
        let Y_OFF = 200;
 
+       this.board = [];
+
        // top row
+       let row0 = [];
        tmp = this.add.image(0,Y_OFF+0,"1").setOrigin(0,0);
        this.sliders.add(tmp);
+       row0[0] = { sprite : tmp };
        tmp = this.add.image(132,Y_OFF+0,"2").setOrigin(0,0);
        this.sliders.add(tmp);
+       row0[1] = { sprite : tmp };
        tmp = this.add.image(132+132,Y_OFF+0,"3").setOrigin(0,0);
        this.sliders.add(tmp);
+       row0[2] = { sprite : tmp };
+       this.board[0] = row0;
+
        // middle row
+       let row1 = [];
        tmp = this.add.image(0,Y_OFF+132,"4").setOrigin(0,0);
        this.sliders.add(tmp);
+       row1[0] = { sprite : tmp };
        tmp = this.add.image(132,Y_OFF+132,"player").setOrigin(0,0);
        this.sliders.add(tmp);
+       row1[1] = { sprite : tmp };
+       this.player = { sprite : tmp, row : 1, col : 1 };
+
        tmp = this.add.image(132+132,Y_OFF+132,"1").setOrigin(0,0);
        this.sliders.add(tmp);
+       row1[2] = { sprite : tmp };
+       this.board[1] = row1;
+
        // bottom row
+       let row2 = [];
        tmp = this.add.image(0,Y_OFF+132+132,"2").setOrigin(0,0);
        this.sliders.add(tmp);
+       row2[0] = { sprite : tmp };
        tmp = this.add.image(132,Y_OFF+132+132,"3").setOrigin(0,0);
        this.sliders.add(tmp);
+       row2[1] = { sprite : tmp };
        tmp = this.add.image(132+132,Y_OFF+132+132,"4").setOrigin(0,0);
        this.sliders.add(tmp);
+       row2[2] = { sprite : tmp };
+       this.board[2] = row2;
 
        this.input.on("pointerdown", (ptr) => {
            this.downX = ptr.x;
@@ -127,13 +158,17 @@ class GameScene extends Phaser.Scene {
             this.upY = ptr.y;
 
             if (this.upX < this.downX - SWIPE_THRESHOLD){
-                console.log("swipeleft");
+                //console.log("swipeleft");
+                this.handle_swipe("left");
             } else if (this.upX > this.downX + SWIPE_THRESHOLD) {
-                console.log("swiperight");
+                //console.log("swiperight");
+                this.handle_swipe("right");
             } else if (this.upY < this.downY - SWIPE_THRESHOLD) {
-                console.log("swipeup");
+                //console.log("swipeup");
+                this.handle_swipe("up");
             } else if (this.upY > this.downY + SWIPE_THRESHOLD) {
-                console.log("swipedown");
+                //console.log("swipedown");
+                this.handle_swipe("down");
             }
        });
 
