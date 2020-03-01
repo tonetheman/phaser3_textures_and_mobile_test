@@ -6,6 +6,7 @@ let gameOptions = {
 };
 let game = null;
 let SWIPE_THRESHOLD = 50;
+let Y_OFF = 200;
 
 function resize(){
     let canvas = document.querySelector("canvas");
@@ -46,7 +47,7 @@ class GameScene extends Phaser.Scene {
         this.player = null;
 
     }
-    make_graphics() {
+    make_debug_graphics() {
         let _this = this;
         function _gg(name,color) {
             let graphics = _this.add.graphics();
@@ -62,7 +63,7 @@ class GameScene extends Phaser.Scene {
         _gg("blue",0x0000ff);
     }
     preload() {
-        this.make_graphics();
+        this.make_debug_graphics();
         this.load.image("1", "3f4d63.png");
         this.load.image("2", "85a1c1.png");
         this.load.image("3","274b69.png");
@@ -73,18 +74,58 @@ class GameScene extends Phaser.Scene {
         this.load.image("player", "202022_selected.png");
     }
     handle_swipe(direction) {
+        let r_off = 0;
+        let c_off = 0;
         if (direction=="left") {
-            let row = this.player.row;
-            let col = this.player.col;
-
-            // hide the sprite to the left
-            this.board[row][col-1].sprite.visible = false;
-
-            // now tween the player to that position
-            
+            c_off = -1;
+            console.log("swipe left");
         }
+        if (direction=="right") {
+            c_off = 1;
+            console.log("swipe right");
+        }
+        if (direction=="down") {
+            r_off = +1;
+            console.log("swipe down");
+        }
+        if (direction=="up") {
+            r_off = -1;
+            console.log("swipe up");
+        }
+
+        let row = this.player.row;
+        let col = this.player.col;
+        let computed_x = (col*132) + (c_off*132);
+        let computed_y = Y_OFF + (row*132) + (r_off*132);
+        
+        let tl = this.tweens.createTimeline();
+        tl.add({
+            targets: this.board[row+r_off][col+c_off].sprite,
+            alpha: 0,
+            duration: 1000,
+            callbackScope: this,
+            onComplete: function(){
+                this.board[row+r_off][col+c_off].sprite.visible = false;
+            }
+        });
+        tl.add({
+            targets : this.board[row][col].sprite,
+            x : computed_x,
+            y : computed_y,
+            duration : 1000,
+            callbackScope : this,
+            onComplete : function() {
+                this.player.row += r_off;
+                this.player.col += c_off;
+            }
+        });
+        
+        // TODO: need to move other boxes
+        // TODO: add a new random box on the side
+
+        tl.play();            
     }
-    create() {
+    add_debug_boxes() {
         this.igroup = this.add.group();
         let tmp = this.add.image(0,0,"blue").setOrigin(0,0);
         this.igroup.add(tmp);
@@ -94,85 +135,60 @@ class GameScene extends Phaser.Scene {
         this.igroup.add(tmp);
         tmp = this.add.image(0,gameOptions.height-8,"blue").setOrigin(0,0);
         this.igroup.add(tmp);
-
         /*
         // middle dot red
         tmp = this.add.image(gameOptions.width/2,
             gameOptions.height/2,"red");
         this.igroup.add(tmp);
         */
-       
-       this.sliders = this.add.group();
+    }
+    setup_input_handlers() {
+        this.input.on("pointerdown", (ptr) => {
+            this.downX = ptr.x;
+            this.downY = ptr.y;
+        });
+        this.input.on("pointerup", (ptr) => {
+             this.upX = ptr.x;
+             this.upY = ptr.y;
+ 
+             if (this.upX < this.downX - SWIPE_THRESHOLD){
+                 this.handle_swipe("left");
+             } else if (this.upX > this.downX + SWIPE_THRESHOLD) {
+                 this.handle_swipe("right");
+             } else if (this.upY < this.downY - SWIPE_THRESHOLD) {
+                 this.handle_swipe("up");
+             } else if (this.upY > this.downY + SWIPE_THRESHOLD) {
+                 this.handle_swipe("down");
+             }
+        }); 
+    }
+    create() {
+        this.add_debug_boxes();
 
-       let Y_OFF = 200;
+        this.sliders = this.add.group();
 
-       this.board = [];
-
-       // top row
-       let row0 = [];
-       tmp = this.add.image(0,Y_OFF+0,"1").setOrigin(0,0);
-       this.sliders.add(tmp);
-       row0[0] = { sprite : tmp };
-       tmp = this.add.image(132,Y_OFF+0,"2").setOrigin(0,0);
-       this.sliders.add(tmp);
-       row0[1] = { sprite : tmp };
-       tmp = this.add.image(132+132,Y_OFF+0,"3").setOrigin(0,0);
-       this.sliders.add(tmp);
-       row0[2] = { sprite : tmp };
-       this.board[0] = row0;
-
-       // middle row
-       let row1 = [];
-       tmp = this.add.image(0,Y_OFF+132,"4").setOrigin(0,0);
-       this.sliders.add(tmp);
-       row1[0] = { sprite : tmp };
-       tmp = this.add.image(132,Y_OFF+132,"player").setOrigin(0,0);
-       this.sliders.add(tmp);
-       row1[1] = { sprite : tmp };
-       this.player = { sprite : tmp, row : 1, col : 1 };
-
-       tmp = this.add.image(132+132,Y_OFF+132,"1").setOrigin(0,0);
-       this.sliders.add(tmp);
-       row1[2] = { sprite : tmp };
-       this.board[1] = row1;
-
-       // bottom row
-       let row2 = [];
-       tmp = this.add.image(0,Y_OFF+132+132,"2").setOrigin(0,0);
-       this.sliders.add(tmp);
-       row2[0] = { sprite : tmp };
-       tmp = this.add.image(132,Y_OFF+132+132,"3").setOrigin(0,0);
-       this.sliders.add(tmp);
-       row2[1] = { sprite : tmp };
-       tmp = this.add.image(132+132,Y_OFF+132+132,"4").setOrigin(0,0);
-       this.sliders.add(tmp);
-       row2[2] = { sprite : tmp };
-       this.board[2] = row2;
-
-       this.input.on("pointerdown", (ptr) => {
-           this.downX = ptr.x;
-           this.downY = ptr.y;
-       });
-       this.input.on("pointerup", (ptr) => {
-            this.upX = ptr.x;
-            this.upY = ptr.y;
-
-            if (this.upX < this.downX - SWIPE_THRESHOLD){
-                //console.log("swipeleft");
-                this.handle_swipe("left");
-            } else if (this.upX > this.downX + SWIPE_THRESHOLD) {
-                //console.log("swiperight");
-                this.handle_swipe("right");
-            } else if (this.upY < this.downY - SWIPE_THRESHOLD) {
-                //console.log("swipeup");
-                this.handle_swipe("up");
-            } else if (this.upY > this.downY + SWIPE_THRESHOLD) {
-                //console.log("swipedown");
-                this.handle_swipe("down");
+        this.board = [];
+        for(let i=0;i<3;i++) {
+            let row = [];
+            for (let j=0;j<3;j++) {
+                // note:
+                // j is the column value, so j is X
+                // i is row value, so i is Y
+                let tmp = this.add.image(j*132,Y_OFF + (i*132), Phaser.Math.Between(1,5)).setOrigin(0,0);
+                this.sliders.add(tmp);
+                row[j] = { sprite : tmp, row : i, col : j };
             }
-       });
+            this.board[i] = row;
+        }
+        // setup the player as the middle one
+        {
+            let tmp = this.add.image(132,Y_OFF+132,"player").setOrigin(0,0);
+            this.sliders.add(tmp);
+            this.board[1][1] = { sprite : tmp, row: 1, col: 1 };
+            this.player = this.board[1][1];
+        }
 
-
+        this.setup_input_handlers();
     }
 }
 
