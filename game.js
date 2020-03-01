@@ -93,12 +93,14 @@ class GameScene extends Phaser.Scene {
             console.log("swipe up");
         }
 
+        console.log("player before any moves:",this.player);
         let row = this.player.row;
         let col = this.player.col;
         let computed_x = (col*132) + (c_off*132);
         let computed_y = Y_OFF + (row*132) + (r_off*132);
         
         let tl = this.tweens.createTimeline();
+        // turn off the sprite where we are going
         tl.add({
             targets: this.board[row+r_off][col+c_off].sprite,
             alpha: 0,
@@ -108,6 +110,7 @@ class GameScene extends Phaser.Scene {
                 this.board[row+r_off][col+c_off].sprite.visible = false;
             }
         });
+        // move the player sprite
         tl.add({
             targets : this.board[row][col].sprite,
             x : computed_x,
@@ -123,7 +126,7 @@ class GameScene extends Phaser.Scene {
         // TODO: need to move other boxes
         // TODO: add a new random box on the side
 
-        tl.play();            
+        tl.play();
     }
     add_debug_boxes() {
         this.igroup = this.add.group();
